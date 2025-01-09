@@ -6,6 +6,7 @@ interface AuthContextType {
   logout: () => void;
   token: string | null;
 }
+const TOKEN_STORAGE_KEY = process.env.REACT_APP_TOKEN_STORAGE_KEY || "authToken";
 
 export const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
@@ -23,13 +24,13 @@ export const AuthContextProvider: React.FC<{ children: ReactNode }> = ({ childre
   }, []);
 
   const login = (token: string) => {
-    localStorage.setItem("authToken", token);
+    localStorage.setItem(TOKEN_STORAGE_KEY, token);
     setToken(token);
     setIsAuthenticated(true);
   };
 
   const logout = () => {
-    localStorage.removeItem("authToken");
+    localStorage.removeItem(TOKEN_STORAGE_KEY);
     setToken(null);
     setIsAuthenticated(false);
   };

@@ -1,12 +1,9 @@
 import React, { useState } from "react";
 import {
-  Grid,
-  Box,
   Typography,
   TextField,
   Button,
   Card,
-  CardContent,
   InputAdornment,
   IconButton,
   Tooltip,
@@ -14,55 +11,53 @@ import {
   Select,
   FormControl,
   InputLabel,
+  Alert,
+  CircularProgress,
 } from "@mui/material";
 import { styled } from "@mui/system";
 import { FaEye, FaEyeSlash, FaInfoCircle } from "react-icons/fa";
 import { SelectChangeEvent } from "@mui/material";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
+import { authApiService } from "api/services/auth";
+import { useApiErrorHandler } from "hooks/useApiErrorHandler";
 const StyledCard = styled(Card)(({ theme }) => ({
   height: "100%",
   display: "flex",
   flexDirection: "column",
-  //   justifyContent: "center",
   padding: theme.spacing(4),
 }));
-
-const StyledImage = styled("img")({
-  width: "100%",
-  height: "100%",
-  objectFit: "cover",
-});
-
-const ImageContainer = styled(Box)({
-  width: "100%",
-  height: "300px",
-  overflow: "hidden",
-  borderRadius: "12px",
-  marginBottom: "24px",
-});
 
 type SignUpData = {
   name: string;
   address: string;
   gender: string;
-  username: string;
+  userName: string;
   password: string;
   confirmPassword: string;
 };
+
+type FormErrors = Partial<SignUpData>;
 
 const Signup = () => {
   const [formData, setFormData] = useState<SignUpData>({
     name: "",
     address: "",
     gender: "",
-    username: "",
+    userName: "",
     password: "",
     confirmPassword: "",
   });
 
-  const [errors, setErrors] = useState<Partial<SignUpData>>({});
+  // Separate states for form validation errors and API errors
+  const [formErrors, setFormErrors] = useState<FormErrors>({});
+  // const [apiErrors, setApiErrors] = useState<string[]>([]);
+
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const [loading, setLoading] = useState(false);
+
+  const navigate = useNavigate();
+  const { handleApiError, apiErrors, clearApiErrors } = useApiErrorHandler();
   const handleChange = (
     e: React.ChangeEvent<HTMLInputElement | { name?: string; value: unknown }>
   ) => {
@@ -72,6 +67,9 @@ const Signup = () => {
       [name as string]: value,
     }));
     validateField(name as keyof SignUpData, value as string);
+    // Clear API errors when user starts typing
+    // setApiErrors([]);
+    clearApiErrors();
   };
 
   const handleSelectChange = (e: SelectChangeEvent<string>) => {
@@ -81,20 +79,22 @@ const Signup = () => {
       gender: value,
     }));
     validateField("gender", value);
+    // setApiErrors([]);
+    clearApiErrors();
   };
 
   const validateField = (name: keyof SignUpData, value: string) => {
-    const newErrors = { ...errors };
+    const newErrors = { ...formErrors };
 
     switch (name) {
       case "name":
         newErrors.name = value.trim() === "" ? "Name is required" : "";
         break;
-      case "username":
-        newErrors.username = value.trim() === "" ? "Username is required" : "";
+      case "userName":
+        newErrors.userName = value.trim() === "" ? "userName is required" : "";
         break;
       case "password":
-        newErrors.password = value.trim() === "" ? "password is required" : "";
+        newErrors.password = value.trim() === "" ? "Password is required" : "";
         newErrors.password =
           value.length < 8 ? "Password must be at least 8 characters long" : "";
         if (formData.confirmPassword) {
@@ -104,8 +104,7 @@ const Signup = () => {
         break;
       case "confirmPassword":
         newErrors.confirmPassword =
-          value.trim() === "" ? "confirmPassword is required" : "";
-
+          value.trim() === "" ? "Confirm Password is required" : "";
         newErrors.confirmPassword =
           value !== formData.password ? "Passwords do not match" : "";
         break;
@@ -116,14 +115,30 @@ const Signup = () => {
         break;
     }
 
-    setErrors(newErrors);
+    setFormErrors(newErrors);
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    const isValid = Object.values(errors).every((error) => !error);
+    const isValid = Object.values(formErrors).every((error) => !error);
+
     if (isValid) {
-      console.log("Form submitted:", formData);
+      try {
+        const response = await authApiService.register(formData);
+        setLoading(true);
+        console.log(response.message);
+        navigate("/login", {
+          state: {
+            username: formData.userName,
+            message: "user registration success",
+            success: true,
+          },
+        });
+      } catch (error) {
+        handleApiError(error);
+      } finally {
+        setLoading(false);
+      }
     }
   };
 
@@ -132,6 +147,15 @@ const Signup = () => {
       <Typography variant="h4" gutterBottom>
         Create Your Account
       </Typography>
+
+      {apiErrors.length > 0 && (
+        <Alert severity="error" sx={{ mb: 2 }}>
+          {apiErrors.map((error, index) => (
+            <div key={index}>{error}</div>
+          ))}
+        </Alert>
+      )}
+
       <form onSubmit={handleSubmit}>
         <TextField
           fullWidth
@@ -139,19 +163,19 @@ const Signup = () => {
           name="name"
           value={formData.name}
           onChange={handleChange}
-          error={!!errors.name}
-          helperText={errors.name}
+          error={!!formErrors.name}
+          helperText={formErrors.name}
           margin="normal"
           required
         />
         <TextField
           fullWidth
           label="Username"
-          name="username"
-          value={formData.username}
+          name="userName"
+          value={formData.userName}
           onChange={handleChange}
-          error={!!errors.username}
-          helperText={errors.username}
+          error={!!formErrors.userName}
+          helperText={formErrors.userName}
           margin="normal"
           required
         />
@@ -171,7 +195,7 @@ const Signup = () => {
             value={formData.gender}
             onChange={handleSelectChange}
             label="Gender"
-            error={!!errors.gender}
+            error={!!formErrors.gender}
           >
             <MenuItem value="">
               <em>None</em>
@@ -180,8 +204,8 @@ const Signup = () => {
             <MenuItem value="female">Female</MenuItem>
             <MenuItem value="other">Other</MenuItem>
           </Select>
-          {errors.gender && (
-            <Typography color="error">{errors.gender}</Typography>
+          {formErrors.gender && (
+            <Typography color="error">{formErrors.gender}</Typography>
           )}
         </FormControl>
         <TextField
@@ -189,10 +213,11 @@ const Signup = () => {
           label="Password"
           name="password"
           type={showPassword ? "text" : "password"}
+          // value='Gopak@91456'
           value={formData.password}
           onChange={handleChange}
-          error={!!errors.password}
-          helperText={errors.password}
+          error={!!formErrors.password}
+          helperText={formErrors.password}
           margin="normal"
           required
           InputProps={{
@@ -218,10 +243,11 @@ const Signup = () => {
           label="Confirm Password"
           name="confirmPassword"
           type={showConfirmPassword ? "text" : "password"}
+          // value='Gopak@91456'
           value={formData.confirmPassword}
           onChange={handleChange}
-          error={!!errors.confirmPassword}
-          helperText={errors.confirmPassword}
+          error={!!formErrors.confirmPassword}
+          helperText={formErrors.confirmPassword}
           margin="normal"
           required
           InputProps={{
@@ -262,8 +288,13 @@ const Signup = () => {
           color="primary"
           size="large"
           fullWidth
+          disabled={
+            Object.values(formErrors).some((error) => error) ||
+            apiErrors.length > 0 ||
+            loading
+          }
         >
-          Sign Up
+          {loading ? <CircularProgress size={24} color="inherit" /> : "Sign Up"}
         </Button>
       </form>
     </StyledCard>
