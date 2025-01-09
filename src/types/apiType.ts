@@ -6,4 +6,5 @@ export interface ApiError {
 
 export interface normalResponse {
   message: string;
+  success:string;
 }

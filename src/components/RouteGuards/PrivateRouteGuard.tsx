@@ -1,6 +1,6 @@
 import React from "react";
 import { Navigate } from "react-router-dom";
-
+import ResponsiveAppBar from "components/header/ResponsiveAppBar";
 interface RouteGuardProps {
   isAuthenticated: boolean;
   children: React.ReactNode;
@@ -13,7 +13,12 @@ const PrivateRouteGuard: React.FC<RouteGuardProps> = ({
   if (!isAuthenticated) {
     return <Navigate to="/login" />;
   }
-  return <>{children}</>;
+  return (
+    <>
+      <ResponsiveAppBar />
+      {children}
+    </>
+  );
 };
 
-export default PrivateRouteGuard
+export default PrivateRouteGuard;

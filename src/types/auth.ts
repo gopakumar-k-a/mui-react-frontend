@@ -25,7 +25,8 @@ export interface LoginCredentials {
   password: string;
 }
 
-export interface LoginResponse extends normalResponse,User {
+export interface LoginResponse extends normalResponse {
   accessToken: string;
+  user:User
 }
 export type ApiErrorResponse = AxiosError<ApiError>;

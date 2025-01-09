@@ -4,10 +4,11 @@ import {
   LoginCredentials,
   LoginResponse,
   RegisterCredentials,
-  RegisterResponse
+  RegisterResponse,
 } from "../../types/auth";
 const TOKEN_STORAGE_KEY =
   process.env.REACT_APP_TOKEN_STORAGE_KEY || "authToken";
+const AUTH_API_URL = "/auth";
 
 export const authApiService = {
   setTokens(tokens: AuthTokens): void {
@@ -25,27 +26,27 @@ export const authApiService = {
 
   login: async (credentials: LoginCredentials): Promise<LoginResponse> => {
     const response = await publicClient.post<LoginResponse>(
-      "/auth/login",
+      `${AUTH_API_URL}/login`,
       credentials
     );
     // authService.setTokens(response.data);
     return response.data;
   },
-  register: async (credentials: RegisterCredentials): Promise<RegisterResponse> => {
+  register: async (
+    credentials: RegisterCredentials
+  ): Promise<RegisterResponse> => {
     try {
       const response = await publicClient.post<RegisterResponse>(
-        "/auth/register",
+        `${AUTH_API_URL}/register`,
         credentials
       );
       // authService.setTokens(response.data);
-      console.log('response.data ',response.data);
-      
-      return response.data;  
+      console.log("response.data ", response.data);
+
+      return response.data;
     } catch (error) {
       throw error;
-      
     }
-
   },
 
   refreshToken: async (): Promise<string | null> => {

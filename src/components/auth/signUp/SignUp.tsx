@@ -97,6 +97,12 @@ const Signup = () => {
         newErrors.password = value.trim() === "" ? "Password is required" : "";
         newErrors.password =
           value.length < 8 ? "Password must be at least 8 characters long" : "";
+          const passwordRegex = /^(?=.*[0-9])(?=.*[!@#$%^&*])[A-Za-z0-9!@#$%^&*]{8,}$/;
+
+          if (!passwordRegex.test(value)) {
+            newErrors.password =
+              "Password must contain at least one number and one special character";
+          }
         if (formData.confirmPassword) {
           newErrors.confirmPassword =
             value !== formData.confirmPassword ? "Passwords do not match" : "";
