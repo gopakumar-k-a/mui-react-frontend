@@ -29,7 +29,12 @@ import {
 import DeleteIcon from "@mui/icons-material/Delete";
 import { FormDataPayload } from "types/user";
 import { useApiErrorHandler } from "hooks/useApiErrorHandler";
-
+import { useGoogleReCaptcha } from "react-google-recaptcha-v3";
+import { getCaptchaToken } from "utils/captcha";
+import { AltRoute } from "@mui/icons-material";
+// import ReCAPTCHA from 'react-google-recaptcha'
+// import { loadReCaptcha, ReCaptcha } from 'react-google-recaptcha-v3';
+// import ReCaptcha from "react-recaptcha";
 const theme = createTheme();
 
 interface FormData {
@@ -74,7 +79,9 @@ export default function TaskFormCard() {
 
   const [errors, setErrors] = useState<FormErrors>({});
   const [isSubmitted, setIsSubmitted] = useState(false);
+  // const [captchaToken, setCaptchaToken] = useState<string>("");
   const { handleApiError, apiErrors, clearApiErrors } = useApiErrorHandler();
+  // const { executeRecaptcha } = useGoogleReCaptcha();
 
   const validateForm = (): boolean => {
     const newErrors: FormErrors = {};
@@ -147,22 +154,26 @@ export default function TaskFormCard() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    const token = await getCaptchaToken();
+
+    if (!token) {
+      alert("captcha is not available right now");
+      return;
+    }
     if (validateForm()) {
       try {
         const formDataToSend = new FormData();
+        formDataToSend.append("token", token);
         Object.keys(formData).forEach((key) => {
           const value = formData[key as keyof FormDataPayload];
 
-          // Convert non-string values to strings
           if (typeof value !== "object") {
-            // Ensure we don't process files here
             formDataToSend.append(key, String(value));
           }
         });
         formData.files.forEach((file) => {
           formDataToSend.append("files", file);
         });
-        console.log("Form submitted:", formData);
         const response = await userApiService.uploadForm(formDataToSend);
         setIsSubmitted(true);
       } catch (error) {
@@ -413,6 +424,25 @@ export default function TaskFormCard() {
                     </Typography>
                   )}
                 </Box>
+                {/* <div style={{ margin: "20px 0" }}> */}
+                {/* <Box
+                  sx={{
+                    mt: 2,
+                    display: "flex",
+                    justifyContent: "space-between",
+                  }}
+                >
+                  <ReCAPTCHA
+                    sitekey="6Ld23bIqAAAAALrROmddTf49omdRDIRF2wzfm3iFYOUR_GOOGLE_RECAPTCHA_SITE_KEY"
+                    render="explicit"
+                    verifyCallback={verifyCallback}
+                  />
+                </Box> */}
+                {/* </div> */}
+                {/* <div
+                  className="g-recaptcha"
+                  data-sitekey="6Lf55rIqAAAAAIqHT03fl5-HDKc_Un4szLoMtFUr"
+                ></div> */}
                 <Box
                   sx={{
                     mt: 2,
@@ -433,6 +463,7 @@ export default function TaskFormCard() {
                 </Box>
               </form>
             )}
+            {/* <ReCAPTCHA sitekey={process.env.REACT_APP_SITE_KEY as string} /> */}
           </CardContent>
         </Card>
       </Box>

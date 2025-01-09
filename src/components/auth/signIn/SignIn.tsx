@@ -87,7 +87,6 @@ const SignIn = () => {
       try {
         const response = await authApiService.login(formData);
         setLoading(true);
-        console.log("response after login ", response);
 
         login(response.accessToken, response.user);
         navigate("/");

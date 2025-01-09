@@ -40,9 +40,6 @@ export const authApiService = {
         `${AUTH_API_URL}/register`,
         credentials
       );
-      // authService.setTokens(response.data);
-      console.log("response.data ", response.data);
-
       return response.data;
     } catch (error) {
       throw error;
