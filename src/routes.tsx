@@ -1,8 +1,10 @@
+import FormLayoutPage from "pages/FormLayoutPage";
 import React, { lazy, Suspense } from "react";
-
+import CustomLoader from "components/loader/CircularIndeterminate";
 const HomePage = lazy(() => import("./pages/HomePage"));
 const AuthenticationPage = lazy(() => import("./pages/AuthenticationPage"));
-const Loading = () => <h1>Loading...</h1>;
+// const Error404 = lazy(() => import("./pages/Error404"));
+// const Loading = () => <h1>Loading...</h1>;
 interface Route {
   path: string;
   element: React.ReactNode;
@@ -13,7 +15,7 @@ const routes: Route[] = [
   {
     path: "/",
     element: (
-      <Suspense fallback={<Loading />}>
+      <Suspense fallback={<CustomLoader />}>
         <HomePage />
       </Suspense>
     ),
@@ -22,7 +24,7 @@ const routes: Route[] = [
   {
     path: "/login",
     element: (
-      <Suspense fallback={<Loading />}>
+      <Suspense fallback={<CustomLoader />}>
         <AuthenticationPage />
       </Suspense>
     ),
@@ -31,11 +33,20 @@ const routes: Route[] = [
   {
     path: "/register",
     element: (
-      <Suspense fallback={<Loading />}>
+      <Suspense fallback={<CustomLoader />}>
         <AuthenticationPage />
       </Suspense>
     ),
     isPrivate: false,
+  },
+  {
+    path: "/form-layout",
+    element: (
+      <Suspense fallback={<CustomLoader />}>
+        <FormLayoutPage />
+      </Suspense>
+    ),
+    isPrivate: true,
   },
 ];
 

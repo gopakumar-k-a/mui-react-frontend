@@ -4,6 +4,7 @@ import PublicRouteGuard from "components/RouteGuards/PublicRouteGuard";
 import PrivateRouteGuard from "components/RouteGuards/PrivateRouteGuard";
 import routes from "./routes";
 import { useAuth } from "hooks/useAuth";
+import Error404 from './pages/Error404'
 
 function App() {
   const { isAuthenticated } = useAuth();
@@ -37,6 +38,10 @@ function App() {
             );
           }
         })}
+        <Route
+          path="*"
+          element={<Error404 />}
+        />
       </Routes>
     </BrowserRouter>
   );

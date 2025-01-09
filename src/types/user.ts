@@ -9,4 +9,16 @@ export interface UpdatePasswordResponse {
     success: boolean;
   }
 
+
+  export interface FormDataPayload {
+    text: string;
+    email: string;
+    password: string;
+    date: string;
+    number: string | number; 
+    checkbox: boolean;
+    radio: string;
+    textarea: string;
+    select: string;
+  }
   

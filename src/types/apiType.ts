@@ -6,5 +6,10 @@ export interface ApiError {
 
 export interface normalResponse {
   message: string;
-  success:string;
+  success: string;
+}
+
+export interface FormSubmit extends normalResponse {
+  formErrors: string[];
+  fileErrors: string[];
 }

@@ -88,15 +88,43 @@ const ChangePasswordModal: React.FC<ChangePasswordModalProps> = ({
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
-    setForm((prevForm) => ({
-      ...prevForm,
-      [name]: value,
-      errors: {
-        ...prevForm.errors,
-        [name]: "",
-      },
-    }));
+  
+    setForm((prevForm) => {
+      const updatedForm = {
+        ...prevForm,
+        [name]: value,
+        errors: {
+          ...prevForm.errors,
+          [name]: "", // Clear the error for the current field
+        },
+      };
+  
+      // Optionally, validate the field dynamically
+      if (name === "newPassword") {
+        if (!passwordValidationRegex.test(value)) {
+          updatedForm.errors.newPassword =
+            "Password must be at least 8 characters long, contain a number and a special character.";
+        } else if (value === prevForm.currentPassword) {
+          updatedForm.errors.newPassword =
+            "New password cannot be the same as the current password.";
+        } else {
+          updatedForm.errors.newPassword = "";
+        }
+      }
+  
+      if (name === "confirmPassword") {
+        if (value !== prevForm.newPassword) {
+          updatedForm.errors.confirmPassword =
+            "New password and confirmation do not match.";
+        } else {
+          updatedForm.errors.confirmPassword = "";
+        }
+      }
+  
+      return updatedForm;
+    });
   };
+  
 
   const handleSubmit = async () => {
     let isValid = true;
